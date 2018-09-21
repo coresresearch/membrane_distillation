@@ -121,12 +121,12 @@ for m in membranes:
         T_d = profiles[:,1]
         x = profiles[:,2]
 
-        T_f_avg = np.sum(T_f[:-2]*(x[1:-1]-x[:-2]))/x[-1]
-        T_d_avg = np.sum(T_d[:-2]*(x[1:-1]-x[:-2]))/x[-1]
+        x_vec = np.linspace(0,x[-1],10)
+        T_f_vec = np.interp(x_vec,x,T_f)
+        T_d_vec = np.interp(x_vec,x,T_d)
 
-        print(T_f_avg,T_d_avg)
-        temp_data.at[i_temp,'Feed Temp [C]']=T_f_avg
-        temp_data.at[i_temp,'Perm Temp [C]']=T_d_avg
+        J_k_DGM = np.zeros_like(tau_g_vec)
+        J_k_Fick = np.zeros_like(tau_g_vec)
 
         save_string = (membrane_params['name']+'_'+str(int(row_temp['Feed Temp [C]']))+'_'+str(int(row_temp['Perm Temp [C]'])))
         print(save_string)
@@ -136,94 +136,115 @@ for m in membranes:
             print('Tortusity factor = ',tau_g)
             tic = timeit.default_timer()
             if DGM:
-
-                # Transport flag: 0 for DGM, 1 for Fickean
-                trans_flag = 0
-
-                gas = ct.DustyGas(ctifile)
-                gas.porosity = membrane_params['eps_g']
-                gas.tortuosity = tau_g
-                gas.mean_pore_radius = 2.*membrane_params['r_p']
-                gas.mean_particle_diameter = membrane_params['d_p']
-
-
-                liq = ct.Solution(ctifile,liqphase)
-                liq_int = ct.Interface(ctifile,intphase,[gas,liq])
-
-                params['sdot_gas_ptr'] = np.arange(int_ord_gas,int_ord_gas+gas.n_species)
-
-                from oneD_membrane_sim import load_model, run_model
-
-                SV_0, params = load_model(gas, membrane_params, params, temp_data.loc[i_temp,:], n_points)
-
-                obj = {'gas':gas, 'liq':liq, 'int':liq_int}
-
-                solution = run_model(t_sim,SV_0,obj,membrane_params, temp_data.loc[i_temp,:],params,trans_flag,method)
-                toc = timeit.default_timer()
-                print(toc-tic,' seconds elapsed for DGM.')
-                tic = toc
-
-                n_vars = 1+gas.n_species
-                SV = solution.y[:,-1].T
-
-
-                J_k, _ , _ , _ = DGM_fluxes(SV,obj,membrane_params,temp_data.loc[i_temp,:],params)
-                dataP=np.array([[tau_g], [J_k[4]]])
-                data = np.vstack((dataP, SV[:,np.newaxis]))
-                Data_save_DGM[i_membrane,i_temp,i_tau,:] = data[:,0]
-
-                T_DGM = SV[0::n_vars]
-                rho_k_h2o_DGM = SV[1::n_vars]
-                rho_k_n2_DGM = SV[2::n_vars]
-                rho = rho_k_h2o_DGM+rho_k_n2_DGM
-                Y_k_h2o_DGM = rho_k_h2o_DGM/rho
-
-                P_DGM = np.zeros(n_points)
-                for j in np.arange(n_points):
-                    temp = T_DGM[j]
-                    Yk = [rho_k_h2o_DGM[j],rho_k_n2_DGM[j]]
-                    rho = np.sum(Yk)
-                    gas.TDY = temp,rho,Yk
-                    P_DGM[j] = gas.P
-
+                J_k_vec_DGM = np.zeros_like(x_vec)
             if Fick:
-                params['tau_g'] = tau_g
-                params['K_g'] = 4*membrane_params['d_p']**2 \
-                    *membrane_params['eps_g']**3 \
-                    /(72*tau_g**2*(1-membrane_params['eps_g'])**2)
-                # Transport flag: 0 for DGM, 1 for Fickean
-                trans_flag = 1
+                J_k_vec_Fick = np.zeros_like(x_vec)
 
-                gas = ct.Solution(ctifile)
+            for i_x, x_loc in enumerate(x_vec):
+                T_h = T_f_vec[i_x]
+                T_c = T_d_vec[i_x]
+                if DGM:
 
-                liq = ct.Solution(ctifile,liqphase)
-                liq_int = ct.Interface(ctifile,intphase,[gas,liq])
+                    temp_data.at[i_temp,'Feed Temp [C]']=T_h
+                    temp_data.at[i_temp,'Perm Temp [C]']=T_c
+                    # Transport flag: 0 for DGM, 1 for Fickean
+                    trans_flag = 0
 
-                params['sdot_gas_ptr'] = np.arange(int_ord_gas,int_ord_gas+gas.n_species)
+                    gas = ct.DustyGas(ctifile)
+                    gas.porosity = membrane_params['eps_g']
+                    gas.tortuosity = tau_g
+                    gas.mean_pore_radius = 2.*membrane_params['r_p']
+                    gas.mean_particle_diameter = membrane_params['d_p']
 
-                from oneD_membrane_sim import load_model, run_model
 
-                SV_0, params = load_model(gas, membrane_params, params, temp_data.loc[i_temp,:], n_points)
+                    liq = ct.Solution(ctifile,liqphase)
+                    liq_int = ct.Interface(ctifile,intphase,[gas,liq])
 
-                obj = {'gas':gas, 'liq':liq, 'int':liq_int}
+                    params['sdot_gas_ptr'] = np.arange(int_ord_gas,int_ord_gas+gas.n_species)
 
-                solution = run_model(t_sim,SV_0,obj,membrane_params, temp_data.loc[i_temp,:],params,trans_flag,method)
-                toc = timeit.default_timer()
-                print(toc-tic,' seconds elapsed for Fick.')
-                tic = toc
+                    from oneD_membrane_sim import load_model, run_model
 
-                n_vars = 1+gas.n_species
-                SV = solution.y[:,-1].T
+                    SV_0, params = load_model(gas, membrane_params, params, temp_data.loc[i_temp,:], n_points)
 
-                J_k, _ , _ , _ = Fick_fluxes(SV,obj,membrane_params,temp_data.loc[i_temp,:],params)
-                dataP=np.array([[tau_g], [J_k[4]]])
-                data = np.vstack((dataP, SV[:,np.newaxis]))
-                Data_save_Fick[i_membrane,i_temp,i_tau,:] = data[:,0]
+                    obj = {'gas':gas, 'liq':liq, 'int':liq_int}
+
+                    solution = run_model(t_sim,SV_0,obj,membrane_params, temp_data.loc[i_temp,:],params,trans_flag,method)
+                    toc = timeit.default_timer()
+                    print(toc-tic,' seconds elapsed for DGM.')
+                    tic = toc
+
+                    n_vars = 1+gas.n_species
+                    SV = solution.y[:,-1].T
+
+
+                    J_k, _ , _ , _ = DGM_fluxes(SV,obj,membrane_params,temp_data.loc[i_temp,:],params)
+
+                    J_k_vec_DGM[i_x] = J_k[4]
+
+                    """dataP=np.array([[tau_g], [J_k[4]]])
+                    data = np.vstack((dataP, SV[:,np.newaxis]))
+                    Data_save_DGM[i_membrane,i_temp,i_tau,:] = data[:,0]
+
+                    T_DGM = SV[0::n_vars]
+                    rho_k_h2o_DGM = SV[1::n_vars]
+                    rho_k_n2_DGM = SV[2::n_vars]
+                    rho = rho_k_h2o_DGM+rho_k_n2_DGM
+                    Y_k_h2o_DGM = rho_k_h2o_DGM/rho
+
+                    P_DGM = np.zeros(n_points)
+                    for j in np.arange(n_points):
+                        temp = T_DGM[j]
+                        Yk = [rho_k_h2o_DGM[j],rho_k_n2_DGM[j]]
+                        rho = np.sum(Yk)
+                        gas.TDY = temp,rho,Yk
+                        P_DGM[j] = gas.P"""
+
+                if Fick:
+                    params['tau_g'] = tau_g
+                    params['K_g'] = 4*membrane_params['d_p']**2 \
+                        *membrane_params['eps_g']**3 \
+                        /(72*tau_g**2*(1-membrane_params['eps_g'])**2)
+                    # Transport flag: 0 for DGM, 1 for Fickean
+                    trans_flag = 1
+
+                    gas = ct.Solution(ctifile)
+
+                    liq = ct.Solution(ctifile,liqphase)
+                    liq_int = ct.Interface(ctifile,intphase,[gas,liq])
+
+                    params['sdot_gas_ptr'] = np.arange(int_ord_gas,int_ord_gas+gas.n_species)
+
+                    from oneD_membrane_sim import load_model, run_model
+
+                    SV_0, params = load_model(gas, membrane_params, params, temp_data.loc[i_temp,:], n_points)
+
+                    obj = {'gas':gas, 'liq':liq, 'int':liq_int}
+
+                    solution = run_model(t_sim,SV_0,obj,membrane_params, temp_data.loc[i_temp,:],params,trans_flag,method)
+                    toc = timeit.default_timer()
+                    print(toc-tic,' seconds elapsed for Fick.')
+                    tic = toc
+
+                    n_vars = 1+gas.n_species
+                    SV = solution.y[:,-1].T
+
+                    J_k, _ , _ , _ = Fick_fluxes(SV,obj,membrane_params,temp_data.loc[i_temp,:],params)
+                    J_k_vec_Fick[i_x] = J_k[4]
+                    #dataP=np.array([[tau_g], [J_k[4]]])
+                    #data = np.vstack((dataP, SV[:,np.newaxis]))
+                    #Data_save_Fick[i_membrane,i_temp,i_tau,:] = data[:,0]
+
+            J_k_DGM[i_tau] = np.dot(J_k_vec_DGM[:-1],(x_vec[1:]-x_vec[:-1]))/x_vec[-1]
+            J_k_Fick[i_tau] = np.dot(J_k_vec_Fick[:-1],(x_vec[1:]-x_vec[:-1]))/x_vec[-1]
+            print(' ')
+            print('AVERAGE VALUES FOR tau = ',tau_g,'Fick = ',J_k_Fick,'DGM = ',J_k_DGM)
 
         if DGM:
-            np.savetxt(save_string+'_DGM.csv', Data_save_DGM[i_membrane,i_temp,:,:], delimiter=',')
+            data=np.stack((tau_g_vec,J_k_DGM))
+            np.savetxt(save_string+'_DGM.csv', data.T, delimiter=',')
         if Fick:
-            np.savetxt(save_string+'_Fick.csv', Data_save_Fick[i_membrane,i_temp,:,:], delimiter=',')
+            data = np.stack((tau_g_vec,J_k_Fick))
+            np.savetxt(save_string+'_Fick.csv', data.T, delimiter=',')
 
 
 
