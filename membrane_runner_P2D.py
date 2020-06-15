@@ -44,7 +44,7 @@ temp_data = pd.read_csv('Exp_data.csv')
 # c_v: specific heat of membrane solid [J/kg-K]
 # rho: mass density of membrane solid [kg/m3]
 membrane_data = pd.DataFrame(data={'name':['200nm', '450nm'], \
-    'eps_g':[0.85,0.85], 'r_p':[0.5*0.59e-6,0.5*0.79e-6], 'H':[110e-6, 110e-6],\
+    'eps_g':[0.95,0.95], 'r_p':[0.5*0.59e-6,0.5*0.79e-6], 'H':[110e-6, 110e-6],\
      'd_p':[0.19e-6, 0.19e-6], 'kappa':[0.16, 0.16], 'c_v':[1920,1920], \
      'rho':[946,946] })
 

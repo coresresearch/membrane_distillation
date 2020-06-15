@@ -7,16 +7,20 @@ Colorado School of Mines
 
 
 """
+print('hello1')
 
 # Import necessary modules:
 import numpy as np
 import cantera as ct
 import time
-import pandas as pd
+import pandas as pdpython
 import timeit
+
+from datetime import datetime
 
 from flux_functions import DGM_fluxes, Fick_fluxes
 
+print('hello2')
 """
 This file defines a series of models and runs them, looping over some
 combination of temperature boudnary conditions and/or tortuosity values, and
@@ -54,7 +58,7 @@ tau_g_vec_0 = np.linspace(1.0,2.1,num=23)
 # Specify which membranes to model.  This should be an numpy array,
 #   corresponding to the proprerties in membrane_eps_g, membrane_r_p, and
 #   membrane_H :
-membranes = np.array([0]);
+membranes = np.array([2])
 
 # These flags specify whether or not to run Fickean and/or DGM transport models:
 DGM = 1
@@ -95,6 +99,7 @@ if Fick:
 
 i_membrane = -1
 for m in membranes:
+    print(m)
     i_membrane += 1
     # Load/re-load initial vector of tortuosity factors:
     tau_g_vec = tau_g_vec_0
@@ -128,7 +133,11 @@ for m in membranes:
         temp_data.at[i_temp,'Feed Temp [C]']=T_f_avg
         temp_data.at[i_temp,'Perm Temp [C]']=T_d_avg
 
-        save_string = (membrane_params['name']+'_'+str(int(row_temp['Feed Temp [C]']))+'_'+str(int(row_temp['Perm Temp [C]'])))
+
+        t = datetime.now()
+        dtStr=t.strftime('%m/%d/%Y')
+
+        save_string = (membrane_params['name']+'_'+str(int(row_temp['Feed Temp [C]']))+'_'+str(int(row_temp['Perm Temp [C]']))+'_'+dtStr)
         print(save_string)
         i_tau=-1
         for tau_g in tau_g_vec:
