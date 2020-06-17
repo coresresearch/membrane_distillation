@@ -15,13 +15,14 @@ This is the main file that runs the simulation code.
 
 from scipy.integrate import solve_ivp
 
-def membrane_distillation_1d_model(transport=None, feed_temp=None, \
-    permeate_temp=None):
+def membrane_distillation_1d_model(membrane=None, transport=None,\
+    feed_temp=None, permeate_temp=None):
 
     # Initialize the model, ihcluding reading of inputs, creating Cantera 
     #   objects, and reading and storing model parameters:
-    from membrane_distillation_1d_init import SV_0, obj, params
-
+    from membrane_distillation_1d_init import initialize as init
+    SV_0, obj, params = init(membrane, transport, feed_temp, permeate_temp)
+    
     # Read in the residual function:
     from membrane_distillation_functions import residual_1d
 

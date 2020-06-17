@@ -23,14 +23,15 @@ membrane-data:
   solid-phase-density: 946 #[kg/m3]
 
 phase-names:
-- gas: humid-air
-- liquid: water
-- interface: air_water_int
+  gas: humid-air
+  liquid: water
+  interface: air_water_int
 
 simulation-params:
-- n_y: 3  # Number of discretized volumes
-- t_sim: 1000 # Time to run the simulation [s]
-- integrator-method: 'BDF' # 'BDF' for stiff problems, 'RK45' for non-stiff.
+  n_y: 3  # Number of discretized volumes
+  t_sim: 1000 # Time to run the simulation [s]
+  integrator-method: 'BDF' # 'BDF' for stiff problems, 'RK45' for non-stiff.
+  membrane: '200nm' # Choose from any of the above-definted membranes.
 
 #===============================================================================
 # CANTERA INPUT 
