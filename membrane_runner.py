@@ -7,20 +7,18 @@ Colorado School of Mines
 
 
 """
-print('hello1')
-
 # Import necessary modules:
 import numpy as np
 import cantera as ct
 import time
 import pandas as pdpython
 import timeit
+import pandas as pd
 
 from datetime import datetime
 
 from flux_functions import DGM_fluxes, Fick_fluxes
 
-print('hello2')
 """
 This file defines a series of models and runs them, looping over some
 combination of temperature boudnary conditions and/or tortuosity values, and
@@ -36,7 +34,7 @@ file or in the simulation file 'MD_sim.py'
 
 " --- BEGIN USER INPUTS ---"
 # Read in the data:
-temp_data = pd.read_csv('Exp_data.csv')
+temp_data = pd.read_csv('Experimental_and_CFD_data/Exp_data.csv')
 
 " Membrane Data: 3M 0.2um, 3M 0.45um "
 # names: one string per membrane
@@ -53,29 +51,35 @@ membrane_data = pd.DataFrame(data={'name':['200nm', '450nm'], \
      'rho':[946,946] })
 
 # Vector of tortuosities to simulate:
-tau_g_vec_0 = np.linspace(1.0,2.1,num=23)
+tau_g_vec_0 = np.linspace(1.0,2.1,num=3)#23)
 
 # Specify which membranes to model.  This should be an numpy array,
 #   corresponding to the proprerties in membrane_eps_g, membrane_r_p, and
 #   membrane_H :
-membranes = np.array([2])
+membranes = np.array([0])
 
 # These flags specify whether or not to run Fickean and/or DGM transport models:
 DGM = 1
 Fick = 1
 
 # Specify cti file and phase name(s):
-ctifile = 'air_h2o.cti'
-gasphase = 'air'
-liqphase = 'water'
-intphase = 'water_surf'
+if 0:
+    ctifile = 'air_h2o.cti'
+    gasphase = 'air'
+    liqphase = 'water'
+    intphase = 'water_surf'
+else:
+    ctifile = 'membrane_distillation_inputs.yaml'
+    gasphase = 'humid-air'
+    liqphase = 'water'
+    intphase = 'air_water_int'
 
 # In the cti file, specify the ordinal location of the gas phase in the list of
 #   interface phases (0 = first)
 int_ord_gas = 0
 
 # Provide the number of volumes:
-n_points = 20
+n_points =3#
 
 # Simtulation time [s]
 t_sim = 1000.
@@ -120,7 +124,7 @@ for m in membranes:
 
         T_h, T_c, h_fg_h, h_fg_c, P_H2O_h, P_H2O_c, Flux_p45, Flux_p2 = temp_data.loc[i_temp,:]
 
-        int_temps_string = (str(int(row_temp['Feed Temp [C]']))+'_'+str(int(row_temp['Perm Temp [C]']))+'_profiles.csv')
+        int_temps_string = ('Experimental_and_CFD_data/'+str(int(row_temp['Feed Temp [C]']))+'_'+str(int(row_temp['Perm Temp [C]']))+'_profiles.csv')
         profiles = np.loadtxt(int_temps_string,delimiter=',')
         T_f = profiles[:,0]
         T_d = profiles[:,1]
@@ -135,7 +139,7 @@ for m in membranes:
 
 
         t = datetime.now()
-        dtStr=t.strftime('%m/%d/%Y')
+        dtStr = t.strftime('%m_%d_%Y_%H%M')
 
         save_string = (membrane_params['name']+'_'+str(int(row_temp['Feed Temp [C]']))+'_'+str(int(row_temp['Perm Temp [C]']))+'_'+dtStr)
         print(save_string)
@@ -230,9 +234,9 @@ for m in membranes:
                 Data_save_Fick[i_membrane,i_temp,i_tau,:] = data[:,0]
 
         if DGM:
-            np.savetxt(save_string+'_DGM.csv', Data_save_DGM[i_membrane,i_temp,:,:], delimiter=',')
+            np.savetxt(dtStr+'/'+save_string+'_DGM.csv', Data_save_DGM[i_membrane,i_temp,:,:], delimiter=',')
         if Fick:
-            np.savetxt(save_string+'_Fick.csv', Data_save_Fick[i_membrane,i_temp,:,:], delimiter=',')
+            np.savetxt(dtStr+'/'+save_string+'_Fick.csv', Data_save_Fick[i_membrane,i_temp,:,:], delimiter=',')
 
 
 

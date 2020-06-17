@@ -1,0 +1,107 @@
+#===============================================================================
+# CANTERA INPUT 
+#===============================================================================
+
+description: |-
+  Ideal gas properties of an air-water mixture, interfaced with liquid water.  Reactions allow transfer of H2O between the liquid and vapor phases.
+
+generator: ck2yaml and via hand.
+input-files: [air.inp, gri30_tran.dat]
+cantera-version: 2.5.0a3
+date: Tues, 16 June 2020 15:44:03 -0700
+
+units: {length: cm, time: s, quantity: mol, activation-energy: cal/mol}
+
+phases:
+- name: humid-air
+  thermo: ideal-gas
+  elements: [O, N, H]
+  species: [H2O, N2]
+  transport: mixture-averaged
+  state: {T: 300.0, P: 1 atm}
+# This is currently implemented as an ideal gas, rather than a liquid.  The 
+#   heat of vaporization is handled externally.
+# TODO #1 Implement a liquid water equation of state.
+- name: water
+  thermo: ideal-gas
+  elements: [H, O]
+  species: [H2O(L)]
+  state: {T: 300.0, P: 1 atm}
+- name: air_water_int
+  thermo: ideal-surface
+  kinetics: surface
+  species: [(int)]
+  site-density: 1.0 mol/cm^2
+  reactions: [air-water-rxns]
+  state: {T: 300.0, P: 1 atm}
+
+species:
+- name: O2
+  composition: {O: 2}
+  thermo:
+    model: NASA7
+    temperature-ranges: [200.0, 1000.0, 3500.0]
+    data:
+    - [3.78245636, -2.99673416e-03, 9.84730201e-06, -9.68129509e-09, 3.24372837e-12,
+      -1063.94356, 3.65767573]
+    - [3.28253784, 1.48308754e-03, -7.57966669e-07, 2.09470555e-10, -2.16717794e-14,
+      -1088.45772, 5.45323129]
+    note: TPIS89
+  transport:
+    model: gas
+    geometry: linear
+    well-depth: 107.4
+    diameter: 3.458
+    polarizability: 1.6
+    rotational-relaxation: 3.8
+- name: N2
+  composition: {N: 2}
+  thermo:
+    model: NASA7
+    temperature-ranges: [300.0, 1000.0, 5000.0]
+    data:
+    - [3.298677, 1.4082404e-03, -3.963222e-06, 5.641515e-09, -2.444854e-12,
+      -1020.8999, 3.950372]
+    - [2.92664, 1.4879768e-03, -5.68476e-07, 1.0097038e-10, -6.753351e-15,
+      -922.7977, 5.980528]
+    note: '121286'
+  transport:
+    model: gas
+    geometry: linear
+    well-depth: 97.53
+    diameter: 3.621
+    polarizability: 1.76
+    rotational-relaxation: 4.0
+- name: H2O
+  composition: {H: 2, O: 1}
+  thermo:
+    model: NASA7
+    temperature-ranges: [200.0, 1000.0, 3500.0]
+    data:
+    - [4.198640560, -2.036434100E-03, 6.520402110E-06, -5.487970620E-09, 
+      1.771978170E-12, -3.029372670E+04,  -8.490322080E-01]
+    - [3.033992490, 2.176918040E-03, -1.640725180E-07, -9.704198700E-11,
+      1.682009920E-14, -3.000429710E+04, 4.966770100]
+    note: 'L 8/89'
+  transport:
+    model: gas
+    geometry: nonlinear
+    diameter: 2.60
+    well-depth: 572.40
+    polarizability: 1.84
+    rotational-relaxation: 4.0
+- name: H2O(L)
+  composition: {H: 2, O: 1}
+  thermo: 
+    model: NASA7
+    temperature-ranges: [273.15, 600.0]
+    data:
+    - [7.255750050E+01, -6.624454020E-01, 2.561987460E-03, -4.365919230E-06, 
+      2.781789810E-09, -4.188654990E+04, -2.882801370E+02]
+- name: (int)
+  composition: {}
+  thermo: {model: constant-cp}
+    
+air-water-rxns:
+- equation: H2O(L) <=> H2O
+  rate-constant: {A: 1.0e+5, b: 0., Ea: 0.0}

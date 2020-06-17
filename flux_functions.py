@@ -45,9 +45,9 @@ def Fick_fluxes(SV,obj,membrane_data,temp_data,params):
     mu2 = gas.viscosity
     X_k2 = gas.X
 
-    sdot = int.net_production_rates
+    sdot = int.get_net_production_rates(gas)
     J_k[params['ptr_rho_k']:params['ptr_rho_k']+gas.n_species] = \
-        gas.molecular_weights*sdot[params['sdot_gas_ptr']]
+        gas.molecular_weights*sdot
 
     h_k[params['ptr_rho_k']:params['ptr_rho_k']+gas.n_species] = \
         gas.partial_molar_enthalpies/gas.molecular_weights
@@ -129,10 +129,9 @@ def Fick_fluxes(SV,obj,membrane_data,temp_data,params):
 
     water.TP = T_c+273.15, ct.one_atm
     int.TP = T_c+273.15, ct.one_atm
-    sdot = int.net_production_rates
+    sdot = int.get_net_production_rates(gas)
 
-    J_k[offset+1:offset+gas.n_species+1] = -gas.molecular_weights * \
-        sdot[params['sdot_gas_ptr']]
+    J_k[offset+1:offset+gas.n_species+1] = -gas.molecular_weights * sdot
 
 
     cv_vol_gas = gas.cv_mass*rho2
@@ -170,8 +169,8 @@ def DGM_fluxes(SV,obj,membrane_data,temp_data,params):
     water.TP = T_h+273.15, ct.one_atm
     int.TP = T_h+273.15, ct.one_atm
 
-    sdot = int.net_production_rates
-    J_k[1:1+gas.n_species] = gas.molecular_weights*sdot[params['sdot_gas_ptr']]
+    sdot = int.get_net_production_rates(gas)
+    J_k[1:1+gas.n_species] = gas.molecular_weights*sdot
 
     h_k[1:gas.n_species+1] = gas.partial_molar_enthalpies/gas.molecular_weights
     cv_vol_gas = gas.cv_mass*rho2
@@ -210,10 +209,9 @@ def DGM_fluxes(SV,obj,membrane_data,temp_data,params):
 
     water.TP = T_c+273.15, ct.one_atm
     int.TP = T_c+273.15, ct.one_atm
-    sdot = int.net_production_rates
+    sdot = int.get_net_production_rates(gas)
 
-    J_k[offset+1:offset+gas.n_species+1] = -gas.molecular_weights * \
-        sdot[params['sdot_gas_ptr']]
+    J_k[offset+1:offset+gas.n_species+1] = -gas.molecular_weights * sdot
 
     gas2.TDY = T2,rho2,Y_k2
     h_k[offset+1:offset+gas.n_species+1] = gas.partial_molar_enthalpies / \
@@ -221,5 +219,5 @@ def DGM_fluxes(SV,obj,membrane_data,temp_data,params):
     kappa[-1] = eps_g*gas2.thermal_conductivity + (1.-eps_g)*membrane_data['kappa']
     cv_vol_gas = gas.cv_mass*rho2
     rhoCvInv[-1] = 1./(eps_g*cv_vol_gas + (1.-eps_g)*cv_vol_membrane)
-
+    
     return J_k, h_k, rhoCvInv, kappa
