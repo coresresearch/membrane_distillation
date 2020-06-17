@@ -1,4 +1,38 @@
 #===============================================================================
+# MEMBRANE SIMULATION PARAMETERS 
+#===============================================================================
+
+membrane-data:
+- name: '200nm'
+  porosity: 0.85 #[-]
+  tortuosity: 1.0 #[-]
+  pore-diameter: 0.59e-6 #[m]
+  thickness: 110e-6 #[m]
+  particle-diameter: 0.19e-6 #[m]
+  thermal-conductivity: 0.16 #[W/m/K]
+  const-vol-specific-heat: 1920 #[J/kg/K]
+  solid-phase-density: 946 #[kg/m3]
+- name: '450nm'
+  porosity: 0.85 #[-]
+  tortuosity: 1.0 #[-]
+  pore-diameter: 0.79e-6 #[m]
+  thickness: 110e-6 #[m]
+  particle-diameter: 0.19e-6 #[m]
+  thermal-conductivity: 0.16 #[W/m/K]
+  const-vol-specific-heat: 1920 #[J/kg/K]
+  solid-phase-density: 946 #[kg/m3]
+
+phase-names:
+- gas: humid-air
+- liquid: water
+- interface: air_water_int
+
+simulation-params:
+- n_y: 3  # Number of discretized volumes
+- t_sim: 1000 # Time to run the simulation [s]
+- integrator-method: 'BDF' # 'BDF' for stiff problems, 'RK45' for non-stiff.
+
+#===============================================================================
 # CANTERA INPUT 
 #===============================================================================
 
