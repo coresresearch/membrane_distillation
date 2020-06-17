@@ -19,4 +19,14 @@ If you are using Conda, I would recommend setting up a single environment with a
 
 ```conda create --name modeling --channel cantera/label/dev cantera numpy scipy matplotlib pandas```
 
-This creates an environment `modeling` from which you can run the model.  
+This creates an environment `modeling` from which you can run the model (you do not have to call it modeling). Activate this environment by executing the command:
+
+```conda activate modeling```
+
+The current version of the code also requires the ruamel.yaml module. Once you have activated the environment (`modeling`, or whatever name you gave it), install `ruamel.yaml` to this environment, via Conda:
+
+```conda install -channel conda-forge ruamel.yaml```
+
+(the `-channel` flag indicates to download from a specific conda channel.  Above, we downloaded and installed from the `cantera/label/dev` channel, to get the development version of cantera.  Here, we download and install from `conda-forge`, which hosts the `ruamel.yaml` package).
+
+NOTE, 17 June, 2020: At present, we are in the midst of restructuring the code to make it easie to read and more flexible to run. The current easiest way to run the model is by running `membrane_runner.py`, which fits the model results to some experimental results by varying the membrane gas-phase tortuosity factor. 
