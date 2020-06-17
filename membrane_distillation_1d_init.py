@@ -41,25 +41,94 @@ def initialize(membrane, transport, feed_temp, permeate_temp):
                 'either via command line (--membrane=[name string]) or as a'+\
                 ' field in membrane_distillation_inputs.yaml:simulation-params')
 
-    # This tracks whether or not the named membrane was found in the list of parameters in the input file.  Initialize to "not found":
+    # This tracks whether or not the named membrane was found in the list of 
+    #   parameters in the input file.  Initialize to "not found":
     found = 0 
     for mem in inputs['membrane-data']:
         if mem['name']==membrane:
             if found: 
-                # More than one set of membrane params with that name. Throw error.
-                raise ValueError('There were two or more membranes with the name '\
-                    +membrane+' in your input file.  Pleease edit.')
+                # More than one set of membrane params has that name. 
+                #   Throw an error.
+                raise ValueError('There were two or more membranes with the' \
+                    +' name ' + membrane + ' in your input file. Pleease edit.')
 
             membrane_params = mem
             found = 1
-
-
 
     # Create dictionary of parameters, 'params'
     params = {}
     params['n_y'] = inputs['simulation-params']['n_y']
     params['dyInv'] = params['n_y']/membrane_params['thickness']
     params['dy'] = 1./params['dyInv']
+    params['eps_g'] = membrane_params['porosity']
+    params['r_pore'] = 0.5*membrane_params['pore-diameter']
+    params['d_part'] = membrane_params['particle-diameter']
+    params['kappa_membrane'] = membrane_params['thermal-conductivity']
+    params['c_v_membrane'] = membrane_params['const-vol-specific-heat']
+    params['rho_membrane'] = membrane_params['solid-phase-density']
+
+    
+    # Set up the initial solution vector:    
+    Press = 101325.0     # Initial gas pressure [Pa]
+    # Read out the feed flow temperature and convert to K:
+    if feed_temp is not None:
+        T_feed = 273.15 + feed_temp
+    elif 'T_feed' in inputs['temp-data']:
+        T_feed = 273.15 + inputs['temp-data']['T_feed']
+    else:
+        raise ValueError('Please specify a feed temperature, either via the'\
+            +' command line (--feed_temp=[temp]) or as a field in '+\
+            'membrane_distillation_inputs.yaml:temp-data')      
+    
+    # Read out the permeate flow temperature and convert to K:
+    if permeate_temp is not None:
+        T_permeate = 273.15 + permeate_temp
+    elif 'T_permeate' in inputs['temp-data']:
+        T_permeate = 273.15 + inputs['temp-data']['T_permeate']
+    else:
+        raise ValueError('Please specify a permeate temperature, either via '\
+            + 'the command line (--permeate_temp=[temp]) or as a field in '+\
+            'membrane_distillation_inputs.yaml:temp-data')
+
+    # Calculate the mole fraction of water vapor at the feed side, assuming 
+    #   saturation.
+    # Generic string for gas-phase mole fractions:
+    comp_string = 'N2:{},H2O:{}'
+    X_h2o = inputs['temp-data']['P_H2O_feed']/Press
+    X_k_feed = comp_string.format(1.-X_h2o,X_h2o)
+
+    # Calculate the mole fraction of water vapor at the permeate side,
+    #   assuming saturation:
+    X_h2o = inputs['temp-data']['P_H2O_permeate']/Press
+    X_k_permeate = comp_string.format(1.-X_h2o,X_h2o)
+
+    # Use cantera gas object to calcualte species mass densities:
+    # Feed side:
+    gas.TPX = T_feed, Press, X_k_feed
+    rho_k_feed = gas.density*gas.Y
+
+    # Permeate side:
+    gas.TPX = T_permeate, Press, X_k_permeate
+    rho_k_permeate = gas.density*gas.Y
+
+    # Initialize solution vector:
+    # Each volume has n_species + 1 variables (the extra being temperature)
+    n_vars = gas.n_species+1
+    size_SV = params['n_y']*n_vars
+    SV_0 = np.zeros(size_SV)
+
+    params['ptr_temp']=range(0, size_SV, n_vars)       
+    params['ptr_rho_k'] = np.ndarray(shape=(params['n_y'], gas.n_species),\
+        dtype='int')
+    for j in range(params['n_y']):
+        params['ptr_rho_k'][j,:] = range(1+j*n_vars, \
+                                         1 + j*n_vars + gas.n_species)
+    
+    # Starting guess assumes linear gradients:
+    SV_0[params['ptr_temp']] = np.linspace(T_feed, T_permeate, params['n_y'])
+    for k in np.arange(gas.n_species):
+        SV_0[params['ptr_rho_k'][:,k]] = \
+            np.linspace(rho_k_feed[k],rho_k_permeate[k],params['n_y'])
 
     # If tolerances are not specified, load in the defaults:
     if 'rtol' not in params:

@@ -33,6 +33,14 @@ simulation-params:
   integrator-method: 'BDF' # 'BDF' for stiff problems, 'RK45' for non-stiff.
   membrane: '200nm' # Choose from any of the above-definted membranes.
 
+temp-data:
+  T_feed: 30 #[C]
+  T_permeate: 20 #[C]
+  h_fg_feed: 2.43E+06 #[J/kmol/K]
+  h_fg_permeate: 2.45E+06 #[J/kmol/K]
+  P_H2O_feed: 4246 #[Pa]
+  P_H2O_permeate: 2339 #[Pa
+
 #===============================================================================
 # CANTERA INPUT 
 #===============================================================================
