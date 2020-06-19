@@ -108,7 +108,7 @@ def run_model(t_sim, SV_0, obj, membrane_params, temp_data, params, trans_flag, 
 
         return dSVdt
 
-    sol = solve_ivp(lambda t, y: dSVdt_func(t, y, obj, membrane_params, temp_data, params), \
-        [0, t_sim], SV_0, method=method)
+    sol = solve_ivp(lambda t, y: dSVdt_func(t, y, obj, membrane_params, 
+        temp_data, params), [0, t_sim], SV_0, method=method)
 
     return sol

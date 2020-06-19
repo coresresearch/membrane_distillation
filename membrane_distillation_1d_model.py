@@ -16,21 +16,21 @@ This is the main file that runs the simulation code.
 from scipy.integrate import solve_ivp
 from matplotlib import pyplot as plt
 
-def membrane_distillation_1d_model(membrane=None, tau_g=None, transport=None,\
+def membrane_distillation_1d_model(membrane=None, tau_g=None, transport=None,
     feed_temp=None, permeate_temp=None):
 
     # Initialize the model, including reading of inputs, creating Cantera 
     #   objects, and reading and storing model parameters:
     from membrane_distillation_1d_init import initialize as init
-    SV_0, obj, params = init(membrane, tau_g, transport, \
+    SV_0, obj, params = init(membrane, tau_g, transport, 
         feed_temp, permeate_temp)
     
     # Read in the residual function, to use below:
     from membrane_distillation_functions import residual_1d
 
     # Run the model:
-    solution = solve_ivp(lambda t, y: residual_1d(t, y, obj, params), \
-        [0, params['t final']], SV_0, method = params['method'],\
+    solution = solve_ivp(lambda t, y: residual_1d(t, y, obj, params), 
+        [0, params['t final']], SV_0, method = params['method'],
         rtol = params['rtol'], atol = params['atol'])
 
     # TEMPORARY -- FOR CHECKING THE RESULTS
@@ -54,5 +54,6 @@ if __name__ == '__main__':
     parser.add_argument('--tau_g')
     args = parser.parse_args()
     
-    membrane_distillation_1d_model( args.membrane, args.tau_g, args.transport, \
+    membrane_distillation_1d_model( args.membrane, args.tau_g, args.transport, 
         args.feed_temp, args.permeate_temp)
+        

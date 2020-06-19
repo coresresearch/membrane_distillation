@@ -20,8 +20,8 @@ def residual_1d(t, SV, obj, params):
     elif params['transport']=='Fick':
         from membrane_distillation_1d_fluxes import Fick_fluxes as flux_calc
     else:
-        raise ValueError('Please choose an available transport model. Options'\
-            +' are DGM and Fick.')
+        raise ValueError('Please choose an available transport model. Options '
+            'are DGM and Fick.')
 
     # Initialize the residual vector:
     dSV_dt = np.zeros_like(SV)
@@ -53,7 +53,7 @@ def residual_1d(t, SV, obj, params):
     q_chem[0] = -params['h_fg_feed']*J_k[n_vars+1]
     q_chem[-1] = -params['h_fg_permeate']*J_k[-2]
 
-    Temps = np.append(np.append(params['T_feed'],SV[0::n_vars]), \
+    Temps = np.append(np.append(params['T_feed'],SV[0::n_vars]),
         params['T_permeate'])
     q_cond = kappa*(Temps[:-1]-Temps[1:])*dyInv
     q_cond[-1] = q_cond[-1]*2.
@@ -62,3 +62,4 @@ def residual_1d(t, SV, obj, params):
     dSV_dt[::n_vars] = (q_tot[:-1] - q_tot[1:])*dyInv*rhoCvInv
 
     return dSV_dt
+    

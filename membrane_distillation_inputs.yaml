@@ -147,4 +147,5 @@ species:
     
 air-water-rxns:
 - equation: H2O(L) <=> H2O
-  rate-constant: {A: 1.0e+5, b: 0., Ea: 0.0}
+  rate-constant: {A: 1.0e+5, b: 0., Ea: 0.0} # Set to be very fast.
+  

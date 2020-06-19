@@ -31,12 +31,12 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
     #===========================================================================
     # Read out the selected membrane.  Specification via command-line overrides #   all other input.  If no command-line input is provided, look in the 
     #   input file.  Otherwise, raise an exception:
-    if membrane==None:
+    if membrane is None:
         if 'membrane' in inputs['simulation-params']:
             membrane = inputs['simulation-params']['membrane']
         else:
-            raise ValueError('Please specify a membrane for your simulation'+\
-                'either via command line (--membrane=[name string]) or as a'+\
+            raise ValueError('Please specify a membrane for your simulation'
+                'either via command line (--membrane=[name string]) or as a'
                 ' field in membrane_distillation_inputs.yaml:simulation-params')
     # print(membrane)
     # This tracks whether or not the named membrane was found in the list of 
@@ -47,8 +47,8 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
             if found: 
                 # More than one set of membrane params has that name. 
                 #   Throw an error.
-                raise ValueError('There were two or more membranes with the' \
-                    +' name ' + membrane + ' in your input file. Pleease edit.')
+                raise ValueError('There were two or more membranes with the'
+                    ' name ' + membrane + ' in your input file. Pleease edit.')
 
             membrane_params = mem
             found = 1
@@ -87,13 +87,14 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
     elif 'tau_g' in membrane_params:
         params['tau_g'] = membrane_params['tau_g']
     else:
-        raise ValueError('Please specify a tortuosity tau_g, either via the command line (--tau_g=[value]) or as a field in '+\
+        raise ValueError('Please specify a tortuosity tau_g, either via the '
+        'command line (--tau_g=[value]) or as a field in '
         'membrane_distillation_inputs.yaml:membrane-params')
 
     # For the Fick model, we manually store the membrane permeability:
     if params['transport']=='Fick':
-        params['K_g'] = 4. * params['d_part']**2 * params['eps_g']**3 \
-            / (72.*params['tau_g']**2*(1.-params['eps_g'])**2)
+        params['K_g'] = (4. * params['d_part']**2 * params['eps_g']**3
+            / (72.*params['tau_g']**2*(1.-params['eps_g'])**2))
   
     Press = 101325.0     # Initial gas pressure [Pa]
     # Read out the feed flow temperature and convert to K:
@@ -102,8 +103,8 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
     elif 'T_feed' in inputs['temp-data']:
         params['T_feed'] = 273.15 + inputs['temp-data']['T_feed']
     else:
-        raise ValueError('Please specify a feed temperature, either via the'\
-            +' command line (--feed_temp=[temp]) or as a field in '+\
+        raise ValueError('Please specify a feed temperature, either via the'
+            ' command line (--feed_temp=[temp]) or as a field in '
             'membrane_distillation_inputs.yaml:temp-data')      
     
     # Read out the permeate flow temperature and convert to K:
@@ -112,8 +113,8 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
     elif 'T_permeate' in inputs['temp-data']:
         params['T_permeate'] = 273.15 + inputs['temp-data']['T_permeate']
     else:
-        raise ValueError('Please specify a permeate temperature, either via '\
-            + 'the command line (--permeate_temp=[temp]) or as a field in '+\
+        raise ValueError('Please specify a permeate temperature, either via '
+            'the command line (--permeate_temp=[temp]) or as a field in '
             'membrane_distillation_inputs.yaml:temp-data')
     
     #===========================================================================
@@ -146,7 +147,7 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
         gas.mean_particle_diameter = params['d_part']
 
     liquid = ct.Solution(input_file, inputs['phase-names']['liquid'])
-    interface = ct.Interface(input_file, inputs['phase-names']['interface'],\
+    interface = ct.Interface(input_file, inputs['phase-names']['interface'],
         [gas, liquid])
     obj = {'gas': gas, 'liquid': liquid, 'interface': interface}
 
@@ -160,10 +161,10 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
     SV_0 = np.zeros(size_SV)
 
     params['ptr_temp']=range(0, size_SV, params['n_vars'])
-    params['ptr_rho_k'] = np.ndarray(shape=(params['n_y'], gas.n_species),\
+    params['ptr_rho_k'] = np.ndarray(shape=(params['n_y'], gas.n_species),
         dtype='int')
     for j in range(params['n_y']):
-        params['ptr_rho_k'][j,:] = range(1+j*params['n_vars'], \
+        params['ptr_rho_k'][j,:] = range(1+j*params['n_vars'],
                                          1 + j*params['n_vars'] + gas.n_species)
 
     #===========================================================================
@@ -191,12 +192,10 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
     rho_k_permeate = gas.density*gas.Y
     
     # Starting guess assumes linear gradients:
-    SV_0[params['ptr_temp']] = np.linspace(params['T_feed'], \
+    SV_0[params['ptr_temp']] = np.linspace(params['T_feed'],
         params['T_permeate'], params['n_y'])
     for k in np.arange(gas.n_species):
-        SV_0[params['ptr_rho_k'][:,k]] = \
-            np.linspace(rho_k_feed[k],rho_k_permeate[k],params['n_y'])
-
-
+        SV_0[params['ptr_rho_k'][:,k]] = np.linspace(rho_k_feed[k],
+            rho_k_permeate[k],params['n_y'])
 
     return SV_0, obj, params

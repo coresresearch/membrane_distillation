@@ -46,19 +46,19 @@ def Fick_fluxes(SV, obj, params):
     sdot = interface.get_net_production_rates(gas)
     J_k[params['ptr_rho_k'][j]] = gas.molecular_weights*sdot
     # Species enthalpies:
-    h_k[params['ptr_rho_k'][j]] = gas.partial_molar_enthalpies\
-        /gas.molecular_weights
+    h_k[params['ptr_rho_k'][j]] = (gas.partial_molar_enthalpies
+        / gas.molecular_weights)
     # Constant-volume specific heats (per unit volume)
     rhoCvInv[j] = inv_spec_heat(gas, rho_2, params, eps_g)
     # Volume-averaged thermal conductivity:
-    kappa[j] = eps_g*gas.thermal_conductivity + \
-        (1.-eps_g)*params['kappa_membrane']
+    kappa[j] = (eps_g*gas.thermal_conductivity + 
+        (1.-eps_g)*params['kappa_membrane'])
 
     # Loop through the other membrane volumes:
     for j in range(1,params['n_y']):
         # Re-assign previous "volume 2" variables to volume 1:
-        T_1, Y_k1, rho_1, D_k1, D_T1, P_1, mu_1, X_k1 = \
-            T_2, Y_k2, rho_2, D_k2, D_T2, P_2, mu_2, X_k2
+        T_1, Y_k1, rho_1, D_k1, D_T1, P_1, mu_1, X_k1 = (
+            T_2, Y_k2, rho_2, D_k2, D_T2, P_2, mu_2, X_k2)
 
         # Read out conditions from "next" volume:
         T_2, rho_2, Y_k2 = read_properties(SV, params, j)
@@ -71,15 +71,15 @@ def Fick_fluxes(SV, obj, params):
         rhoCvInv[j] = inv_spec_heat(gas, rho_2, params, eps_g)
 
         # Properties at interface between volumes:
-        mu_int, rho_int, D_k_int, Y_k_int, X_k_int, P_int, D_T_int = \
-            0.5*(mu_1 + mu_2), 0.5*(rho_1+rho_2), 0.5*(D_k1+D_k2), \
-            0.5*(Y_k1+Y_k2), 0.5*(X_k1+X_k2), 0.5*(P_1 + P_2), 0.5*(D_T1 + D_T2)
+        mu_int, rho_int, D_k_int, Y_k_int, X_k_int, P_int, D_T_int = (
+            0.5*(mu_1 + mu_2), 0.5*(rho_1+rho_2), 0.5*(D_k1+D_k2), 
+            0.5*(Y_k1+Y_k2), 0.5*(X_k1+X_k2), 0.5*(P_1 + P_2), 0.5*(D_T1 + D_T2))
 
         #Diffusion operator:
         d_k_int = (X_k2 - X_k1 + (X_k_int - Y_k_int)*(P_2 - P_1)/P_int)*dyInv
         #Diffusive velocity, relative to mass-averaged velocity:
-        V_k_int_o = -D_k_int*d_k_int/X_k_int \
-            - D_T_int*(T_2 - T_1)*dyInv/rho_int/Y_k_int
+        V_k_int_o = (-D_k_int*d_k_int/X_k_int 
+            - D_T_int*(T_2 - T_1)*dyInv/rho_int/Y_k_int)
         #Correction term, so that mass-weighted diffusive fluxes sum to zero:
         V_corr_int = -np.dot(Y_k_int, V_k_int_o)
         #Corrected diffusive velocities:
@@ -93,11 +93,11 @@ def Fick_fluxes(SV, obj, params):
 
         # Set gas to interface properties to calculate thermal conductivity:
         gas.TDY = 0.5*(T_1+T_2), rho_int, Y_k_int
-        h_k[params['ptr_rho_k'][j]] = gas.partial_molar_enthalpies / \
-            gas.molecular_weights
+        h_k[params['ptr_rho_k'][j]] = (gas.partial_molar_enthalpies / 
+            gas.molecular_weights)
         # Volume-weighted average 
-        kappa[j] = eps_g*gas.thermal_conductivity + (1.-eps_g) \
-            * params['kappa_membrane']
+        kappa[j] = (eps_g*gas.thermal_conductivity + (1.-eps_g) 
+            * params['kappa_membrane'])
 
     # Arrays for last interface can't use SV pointers (size(array)>size(SV)).  #    We'll have to manually create an 'offset':
     offset = params['n_y']*params['n_vars']
@@ -114,11 +114,11 @@ def Fick_fluxes(SV, obj, params):
 
     rhoCvInv[-1] = inv_spec_heat(gas, rho_2, params, eps_g)
     # Species enthalpies (per unit mass):
-    h_k[offset+1:offset+gas.n_species+1] = gas.partial_molar_enthalpies / \
-        gas.molecular_weights
+    h_k[offset+1:offset+gas.n_species+1] = (gas.partial_molar_enthalpies /
+        gas.molecular_weights)
     # Volume-weighted average thermal conductivity:
-    kappa[-1] = eps_g*gas.thermal_conductivity + \
-        (1.-eps_g)*params['kappa_membrane']
+    kappa[-1] = (eps_g*gas.thermal_conductivity + 
+        (1.-eps_g)*params['kappa_membrane'])
 
     return J_k, h_k, rhoCvInv, kappa
 
@@ -151,8 +151,8 @@ def DGM_fluxes(SV,obj,params):
     J_k[params['ptr_rho_k'][j]] = gas.molecular_weights*sdot
     
     # Species enthalpies:
-    h_k[params['ptr_rho_k'][j]] = gas.partial_molar_enthalpies\
-        /gas.molecular_weights
+    h_k[params['ptr_rho_k'][j]] = (gas.partial_molar_enthalpies
+        / gas.molecular_weights)
     # Inverse of volume-averaged specific heat:
     rhoCvInv[j] = inv_spec_heat(gas, rho_2, params, eps_g)
 
@@ -161,8 +161,8 @@ def DGM_fluxes(SV,obj,params):
     #   parallel Ideal Gas object:
     gas2 = ct.Solution('membrane_distillation_inputs.yaml','humid-air')  
     gas2.TDY = T_2, rho_2, Y_k2
-    kappa[j] = eps_g*gas2.thermal_conductivity + \
-        (1.-eps_g)*params['kappa_membrane']
+    kappa[j] = (eps_g*gas2.thermal_conductivity +
+        (1.-eps_g)*params['kappa_membrane'])
 
     # Loop through the other membrane volumes:
     for j in range(1, params['n_y']):
@@ -174,8 +174,8 @@ def DGM_fluxes(SV,obj,params):
 
         # Send properties to Cantera molar flux calculator and convert to 
         #   species mass fluxes:
-        J_k[params['ptr_rho_k'][j]] = gas.molecular_weights * \
-            gas.molar_fluxes(T_1, T_2, rho_1, rho_2, Y_k1, Y_k2, dY)
+        J_k[params['ptr_rho_k'][j]] = (gas.molecular_weights *
+            gas.molar_fluxes(T_1, T_2, rho_1, rho_2, Y_k1, Y_k2, dY))
 
         # Properties at volume center:
         rhoCvInv[j] = inv_spec_heat(gas, rho_2, params, eps_g)
@@ -183,12 +183,12 @@ def DGM_fluxes(SV,obj,params):
         # Set gas properties to interface conditions, and read out species 
         #   enthalpies, and volume-averaged thermal conductivity:
         gas.TDY = 0.5*(T_1+T_2),0.5*(rho_1+rho_2),0.5*(Y_k1+Y_k2)
-        h_k[params['ptr_rho_k'][j]] = gas.partial_molar_enthalpies / \
-            gas.molecular_weights
+        h_k[params['ptr_rho_k'][j]] = (gas.partial_molar_enthalpies /
+            gas.molecular_weights)
         # TODO #2
         gas2.TDY = 0.5*(T_1+T_2),0.5*(rho_1+rho_2),0.5*(Y_k1+Y_k2)
-        kappa[j] = eps_g*gas2.thermal_conductivity + \
-            (1.-eps_g)*params['kappa_membrane']
+        kappa[j] = (eps_g*gas2.thermal_conductivity +
+            (1.-eps_g)*params['kappa_membrane'])
 
     
     # Arrays for last interface can't use SV pointers (size(array)>size(SV)).  #    We'll have to manually create an 'offset':
@@ -207,13 +207,13 @@ def DGM_fluxes(SV,obj,params):
     # Inverse of constant-volume specific heats (per unit volume)
     rhoCvInv[-1] = inv_spec_heat(gas, rho_2, params, eps_g)
     # Species enthalpies (per unit mass):
-    h_k[offset+1:offset+gas.n_species+1] = gas.partial_molar_enthalpies / \
-        gas.molecular_weights
+    h_k[offset+1:offset+gas.n_species+1] = (gas.partial_molar_enthalpies /
+        gas.molecular_weights)
     # Set 'gas2' properties back to those of final volume:
     gas2.TDY = T_2, rho_2, Y_k2
     # Volume-weighted average thermal conductivity:
-    kappa[-1] = eps_g*gas2.thermal_conductivity + \
-        (1.-eps_g)*params['kappa_membrane']
+    kappa[-1] = (eps_g*gas2.thermal_conductivity +
+        (1.-eps_g)*params['kappa_membrane'])
 
     return J_k, h_k, rhoCvInv, kappa
 
@@ -274,3 +274,4 @@ def inv_spec_heat(gas, rho_2, params, eps_g):
     rhoCvInv = 1./(eps_g*cv_vol_gas + (1.-eps_g)*cv_vol_membrane)
 
     return rhoCvInv
+    
