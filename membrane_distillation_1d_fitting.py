@@ -41,11 +41,6 @@ t = datetime.now()
 date_string = t.strftime('%m_%d_%Y_%H%M')
 save_folder = savename + '_' + date_string
 
-if DGM:
-    DGM_fluxes = np.zeros((tau_g_vec_0.shape[0],2))
-if Fick:
-    Fick_fluxes = np.zeros((tau_g_vec_0.shape[0],2))
-
 for i_tau, tau_g in enumerate(tau_g_vec_0):
     print('Tortusity factor = ',tau_g)
     tic = timeit.default_timer()
