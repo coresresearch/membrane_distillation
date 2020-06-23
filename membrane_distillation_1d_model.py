@@ -15,9 +15,10 @@ This is the main file that runs the simulation code.
 
 from scipy.integrate import solve_ivp
 from matplotlib import pyplot as plt
+from membrane_distillation_1d_output import *
 
-def membrane_distillation_1d_model(membrane=None, tau_g=None, transport=None,
-    feed_temp=None, permeate_temp=None):
+def membrane_distillation_1d_model(save = None, membrane=None, tau_g=None, 
+    transport=None, feed_temp=None, permeate_temp=None):
 
     # Initialize the model, including reading of inputs, creating Cantera 
     #   objects, and reading and storing model parameters:
@@ -33,14 +34,8 @@ def membrane_distillation_1d_model(membrane=None, tau_g=None, transport=None,
         [0, params['t final']], SV_0, method = params['method'],
         rtol = params['rtol'], atol = params['atol'])
 
-    # TEMPORARY -- FOR CHECKING THE RESULTS
-    legends = list()
-    for j in range(params['n_y']):
-        plt.plot(solution.t, solution.y[params['ptr_rho_k'][j,0],:])
-        legends.append(str(j+1))
+    membrane_distillation_1d_output(solution, params, obj, save)
 
-    plt.legend(legends)
-    plt.show()
 # If this file is being executed as the "Main" python script, run the model, 
 #   with any provided keyword arguments:
 if __name__ == '__main__':
@@ -52,8 +47,8 @@ if __name__ == '__main__':
     parser.add_argument('--permeate_temp')
     parser.add_argument('--membrane')
     parser.add_argument('--tau_g')
+    parser.add_argument('--save')
     args = parser.parse_args()
     
-    membrane_distillation_1d_model( args.membrane, args.tau_g, args.transport, 
-        args.feed_temp, args.permeate_temp)
-        
+    membrane_distillation_1d_model(args.save, args.membrane, args.tau_g, 
+        args.transport, args.feed_temp, args.permeate_temp)
