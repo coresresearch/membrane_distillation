@@ -11,33 +11,33 @@ Installing via [Conda](https://conda.io/) is highly recommended.
 
 The simulation requires a number of Python dependencies, including [Cantera](https://cantera.org), [numpy](http://www.numpy.org/), [ruamel.yaml](https://pypi.org/project/ruamel.yaml/), and [scipy](https://www.scipy.org/).  For all but Cantera, installation can be done using simple [Conda](https://conda.io/) commands:
 
-> ```conda install <package name>```
+> conda install <package name>
   
 For Cantera installation, please see [Cantera's installation instructions](https://cantera.org/install/index.html).
 
 If you are using Conda, I would recommend setting up a single environment with all required packages (it is strongly advised that you do not install packages into your `base` conda environment):
 
-> ```conda create --name membrane --channel cantera/label/dev cantera numpy scipy matplotlib pandas```
+> conda create --name membrane --channel cantera/label/dev cantera numpy scipy matplotlib pandas
 
 This creates an environment `modeling` from which you can run the model (you do not have to call it modeling). Activate this environment by executing the command:
 
-> ```conda activate modeling```
+> conda activate modeling
 
 The current version of the code also requires the ruamel.yaml module. Once you have activated the environment (`modeling`, or whatever name you gave it), install `ruamel.yaml` to this environment, via Conda:
 
-> ```conda install -channel conda-forge ruamel.yaml```
+> conda install -channel conda-forge ruamel.yaml
 
 (the `-channel` flag indicates to download from a specific conda channel.  Above, we downloaded and installed from the `cantera/label/dev` channel, to get the development version of cantera.  Here, we download and install from `conda-forge`, which hosts the `ruamel.yaml` package).
 
 Once you have your Conda environment set up, you need to download the model files. If you use `git`, this is relatively simple to do via cloning from the command line:
 
-> ```git clone https://github.com/coresresearch/membrane_distillation.git```
+> git clone https://github.com/coresresearch/membrane_distillation.git
 
 You can also click "Clone or download," above, followed by "Download ZIP".
 
 Next cd into the folder where you downloaded the model:
 
-> ```cd membrane_distillation```
+> cd membrane_distillation
 
 ## Running the Model
 
@@ -69,7 +69,7 @@ There are two ways to run the model file.
 
     To use inputs from the input file only, simply call the model file.  From the command line, this looks like:  
 
-    > ```python membrane_distillation_1d_model.py```
+    > python membrane_distillation_1d_model.py
 
     If you want to overwrite some of the paramters in the input file, these can be provided via command line keywords.  For example, to save to a folder/file named `outputs/test.csv` (all output files are automatically written to the `outputs` folder), for the `DGM` transport model and a tortuosity factor of 1.3, you would run:
 
