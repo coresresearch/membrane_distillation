@@ -81,12 +81,12 @@ There are two ways to run the model file.
 
 2. Running fits or repeated models:  If you want to run a series of models, or perform a quasi-2D simulation for a given surface temperature profile for each side of the membrane, `membrane_distillation_1d_model.py` can be imported as a module, and run from a python script file.  To run the same model as shown in the block above:
 
-```python
-from membrane_distillation_1d_model import membrane_distillation_1d_model
-membrane_distillation_1d_model(save='test', transport='DGM', tau_g=1.3)
-```
+    ```python
+    from membrane_distillation_1d_model import membrane_distillation_1d_model
+    membrane_distillation_1d_model(save='test', transport='DGM', tau_g=1.3)
+    ```
 
-In this way, your script can easily loop over numerous simulations. The data is saved as you go, which you can then process and analyze after running the simulations. A demonstration of such a fitting routine under construction in the file `membrane_distillation_1d_fitting.py`.
+    In this way, your script can easily loop over numerous simulations. The data is saved as you go, which you can then process and analyze after running the simulations. A demonstration of such a fitting routine under construction in the file `membrane_distillation_1d_fitting.py`.
 
 ## Using, Citing, and Contributing Code.
 
