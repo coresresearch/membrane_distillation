@@ -43,7 +43,7 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
     #   parameters in the input file.  Initialize to "not found":
     found = 0 
     for mem in inputs['membrane-data']:
-        if mem['name']==membrane:
+        if mem['name']==str(membrane):
             if found: 
                 # More than one set of membrane params has that name. 
                 #   Throw an error.
@@ -52,7 +52,9 @@ def initialize(membrane, tau_g, transport, feed_temp, permeate_temp):
 
             membrane_params = mem
             found = 1
-
+    if not found:
+        raise ValueError('Specified membrane ' + membrane + ' not found in'+
+            ' membrane_distillation_inputs.yaml. Pleease edit.')
     #===========================================================================
     #   LOAD PARAMETERS INTO 'param' DICT
     #===========================================================================

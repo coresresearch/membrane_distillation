@@ -28,7 +28,7 @@ phase-names:
   interface: air_water_int
 
 simulation-params:
-  n_y: 20  # Number of discretized volumes
+  n_y: 30  # Number of discretized volumes
   t_sim: 1000 # Time to run the simulation [s]
   integrator-method: 'BDF' # 'BDF' for stiff problems, 'RK45' for non-stiff.
   membrane: '200nm' # Choose from any of the above-definted membranes.

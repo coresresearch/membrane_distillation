@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 from membrane_distillation_1d_output import *
 
 def membrane_distillation_1d_model(save = None, membrane=None, tau_g=None, 
-    transport=None, feed_temp=None, permeate_temp=None):
+    transport=None, feed_temp=None, permeate_temp=None, SV_init=None):
 
     # Initialize the model, including reading of inputs, creating Cantera 
     #   objects, and reading and storing model parameters:
@@ -26,6 +26,9 @@ def membrane_distillation_1d_model(save = None, membrane=None, tau_g=None,
     SV_0, obj, params = init(membrane, tau_g, transport, 
         feed_temp, permeate_temp)
     
+    if SV_init is not None:
+        SV_0 = SV_init
+
     # Read in the residual function, to use below:
     from membrane_distillation_functions import residual_1d
 
@@ -34,7 +37,11 @@ def membrane_distillation_1d_model(save = None, membrane=None, tau_g=None,
         [0, params['t final']], SV_0, method = params['method'],
         rtol = params['rtol'], atol = params['atol'])
 
-    membrane_distillation_1d_output(solution, params, obj, save)
+    if save:
+        membrane_distillation_1d_output(solution, params, obj, save)
+    else:
+        data = membrane_distillation_1d_output(solution, params, obj, save)
+        return data
 
 # If this file is being executed as the "Main" python script, run the model, 
 #   with any provided keyword arguments:
@@ -48,7 +55,8 @@ if __name__ == '__main__':
     parser.add_argument('--membrane')
     parser.add_argument('--tau_g')
     parser.add_argument('--save')
+    parser.add_argument('--init')
     args = parser.parse_args()
     
     membrane_distillation_1d_model(args.save, args.membrane, args.tau_g, 
-        args.transport, args.feed_temp, args.permeate_temp)
+        args.transport, args.feed_temp, args.permeate_temp, args.SV_init)
